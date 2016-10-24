@@ -4,6 +4,11 @@ target
 .idea
 *.class
 
+*.csr
+*.crt
+*.jks
+*.p12
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
