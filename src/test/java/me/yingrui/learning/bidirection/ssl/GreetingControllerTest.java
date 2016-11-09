@@ -15,8 +15,8 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.SecureRandom;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -56,19 +56,7 @@ public class GreetingControllerTest {
             con.setConnectTimeout(30000);
             con.setReadTimeout(30000);
             con.setRequestMethod("GET");
-
-            File pKeyFile = new File("keystore/cid.p12");
-            String pKeyPassword = password;
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-            KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            InputStream keyInput = new FileInputStream(pKeyFile);
-            keyStore.load(keyInput, pKeyPassword.toCharArray());
-            keyInput.close();
-            keyManagerFactory.init(keyStore, pKeyPassword.toCharArray());
-            SSLContext context = SSLContext.getInstance("TLS");
-            context.init(keyManagerFactory.getKeyManagers(), null, new SecureRandom());
-            SSLSocketFactory sockFact = context.getSocketFactory();
-            con.setSSLSocketFactory(sockFact);
+            con.setSSLSocketFactory(getSslSocketFactory("keystore/cid.p12", password));
 
             // Check for errors
             int responseCode = con.getResponseCode();
@@ -80,19 +68,34 @@ public class GreetingControllerTest {
             }
 
             // Process the response
-            BufferedReader reader;
+            StringBuilder responseContent = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String line = null;
-            StringBuilder sb = new StringBuilder();
-            reader = new BufferedReader(new InputStreamReader(inputStream));
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
-                sb.append(line);
+                responseContent.append(line);
             }
-            assertEquals("hello world", sb.toString());
+            assertEquals("hello world", responseContent.toString());
             inputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private SSLSocketFactory getSslSocketFactory(String certFilePath, String password) throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        File pKeyFile = new File(certFilePath);
+
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        InputStream keyInput = new FileInputStream(pKeyFile);
+        keyStore.load(keyInput, password.toCharArray());
+        keyInput.close();
+
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        keyManagerFactory.init(keyStore, password.toCharArray());
+
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(keyManagerFactory.getKeyManagers(), null, new SecureRandom());
+        return context.getSocketFactory();
     }
 
 
