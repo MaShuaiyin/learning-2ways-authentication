@@ -10,11 +10,21 @@ Reference to: http://www.baeldung.com/x-509-authentication-in-spring-security
     mvn clean test
 ```
 
-## How to Create JKS keystore
-To create a new JKS keystore from scratch, containing a single self-signed Certificate, execute the following from a terminal command line:
-
+# Generate all Certificates
 ```sh
-    $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA
-    # Or
-    $JAVA_HOME/bin/keytool -genkey -alias tomcat -keyalg RSA -keystore /path/to/my/keystore
+    ca.crt          # CA certificate
+    cid.crt         # Client signed certificate with the CA
+    cid.csr         # Client Certificate Signing Request CSR
+    cid.p12         # Client private certificate
+    cid.key         # Client private certificate
+    localhost.crt   # Server signed certificate with the CA
+    localhost.csr   # Server Certificate Signing Request CSR
+    localhost.p12   # Client private certificate
+    localhost.key   # Client private certificate
+    truststore.jks
+                    |- ca
+                    |- cid
+    keystore.jks
+                    |- ca
+                    |- localhost
 ```

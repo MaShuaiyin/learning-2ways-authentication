@@ -45,6 +45,13 @@ add-host:
 	keytool -import -trustcacerts -alias $(HOSTNAME) \
 	    -file "$(HOSTNAME).crt" \
 	    -keystore $(KEYSTORE) -storepass $(PASSWORD)
+	# Export private certificate for importing into a browser
+	keytool -importkeystore -srcalias $(HOSTNAME) \
+	     -srckeystore $(KEYSTORE) -srcstorepass $(PASSWORD) \
+	     -destkeystore "$(HOSTNAME).p12" -deststorepass $(PASSWORD) \
+	     -deststoretype PKCS12
+    # Convert localhost.p12 to localhost.key
+	openssl pkcs12 -in "$(HOSTNAME).p12" -nodes -out "$(HOSTNAME).key" -nocerts -passin pass:$(PASSWORD)
 
 export-authority:
 	# Export certificate authority
@@ -82,6 +89,8 @@ add-client:
 	    -srckeystore $(TRUSTSTORE) -srcstorepass $(PASSWORD) \
 	    -destkeystore "$(CLIENTNAME).p12" -deststorepass $(PASSWORD) \
 	    -deststoretype PKCS12
+	# Convert cid.p12 to cid.key
+	openssl pkcs12 -in "$(CLIENTNAME).p12" -nodes -out "$(CLIENTNAME).key" -nocerts -passin pass:$(PASSWORD)
 
 clean:
 	# Remove generated artifacts

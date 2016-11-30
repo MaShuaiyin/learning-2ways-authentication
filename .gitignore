@@ -4,6 +4,7 @@ target
 .idea
 *.class
 
+*.key
 *.csr
 *.crt
 *.jks
